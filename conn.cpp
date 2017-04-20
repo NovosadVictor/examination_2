@@ -6,8 +6,8 @@ std::vector<char> SetNumber(int vv) {
     std::vector<char> v(128, 0);
     int d = vv;
     if (vv == 1) {
-        sprintf(&v[0], "\n    [[ 1 ], [1] [1]]");
-        v[20] = '\0';
+        sprintf(&v[0], "\n    [[ ], [1] [0]]");
+        v[19] = '\0';
         return v;
     }
     sprintf(&v[0], "\n    [[ ");
@@ -31,7 +31,7 @@ std::vector<char> SetNumber(int vv) {
 
 int skip(const char *message) {
     int i;
-    for (i = 0; isblank(message[i]); ++i) {
+    for (i = 0; isblank(message[i]) || isalpha(message[i]); ++i) {
     }
     return i;
 }
@@ -108,7 +108,7 @@ void Conn::rcv() {
         }
         else {
             std::vector<char> v;
-            printf("\nInput numbers: %s\n", &ibuf_[4]);
+            printf("\nInput numbers from %d: %s\n", fd_, &ibuf_[4]);
             SetVector(&ibuf_[0] + sizeof(h), v);
 
             h     = strlen(prefix) + v.size();
@@ -207,7 +207,7 @@ void ConnDb::perform() {
 
             for(d = 1; d < np; d ++) {
                 if(ps_[d].revents & POLLIN)
-                    cs_[ps_[d].fd]->rcv();
+		    cs_[ps_[d].fd]->rcv();
 
                 if(ps_[d].revents & POLLOUT)
                     cs_[ps_[d].fd]->snd();

@@ -1,18 +1,12 @@
 #include "conn.hpp"
 
-static void repl(int fd, int file_desc);
+static void repl(int fd);
 
 int main(int argc, char *argv[]) {
     const char        *host = "127.0.0.1";
     uint16_t           port = 8000;
     struct sockaddr_in addr;
     int                fd;
-
-    int file_desc = open("random.txt", O_RDONLY);
-    if (file_desc == -1) {
-        printf("Cant open file");
-        return -1;
-    }
 
     if(argc != 1 && argc != 3) {
         fprintf(stderr, "Usage: %s [<ip> <port>]\n", argv[0]);
@@ -47,7 +41,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    repl(fd, file_desc);
+    repl(fd);
 
     if(shutdown(fd, 2) == -1) {
         fprintf(stderr, "%4d - Shutdown error.\n", fd);
@@ -66,23 +60,13 @@ int main(int argc, char *argv[]) {
 
 #define BUFLEN 50
 
-static bool readLine(std::vector<char> &l, int file_desc) {
+static bool readLine(std::vector<char> &l) {
     char   buf[BUFLEN];    
     size_t len;
 
     l.clear();
 
-    if (read(file_desc, &len, sizeof(len)) != sizeof(len))
-        return false;
-    if (read(file_desc, buf, len) != (int)len)
-        return false;
-
-    len = strlen(buf);
-
-    l.insert(l.end(), buf, buf + len);
-    l.push_back('\0');
-    sleep(0);
- /*   for(;;) {
+    for(;;) {
         if(!fgets(buf, sizeof buf, stdin))
             return false;
 
@@ -95,24 +79,21 @@ static bool readLine(std::vector<char> &l, int file_desc) {
             break;
         } 
     }
-    */
+
 
     return true;
 }
 
 static bool writeRead(int fd, const char *txt);
-static bool readLine(std::vector<char> &l, int file_desc);
+static bool readLine(std::vector<char> &l);
 
-static void repl(int fd, int file_desc) {
+static void repl(int fd) {
     for(;;) {
         printf(">>> ");
    
         std::vector<char> l;
-        if(!readLine(l, file_desc))
+        if(!readLine(l))
             return;
-  //      printf("Numbers:\n     ");
-  //      puts(&l[0]);
-   //     printf("\n");
 
         if(!writeRead(fd, &l[0]))
             return;
